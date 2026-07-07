@@ -5,3 +5,5 @@ frontend/node_modules/
 dist/
 .env
 *.log
+frontend/build/
+backend/build/

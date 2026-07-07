@@ -1,0 +1,162 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 1. 换上带有宣纸/水彩纸质感的温暖底色 */
+.nomadic-desktop {
+  background-color: #f7f4eb; /* 带有暖调的纸张色 */
+  min-height: 550px;
+  padding: 60px 20px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  /* 用一层淡淡的阴影和噪点模拟纸张凹凸感 */
+  box-shadow: inset 0 0 50px rgba(180, 160, 140, 0.05);
+}
+
+/* 2. 手绘风卡片：让它拥有宣纸的粗糙边缘和铅笔质感 */
+.nomadic-photo {
+  width: 170px;
+  background: #fdfcf7; /* 稍微比底色白一点的画纸色 */
+  padding: 16px 16px 35px 16px;
+  margin: 30px;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  
+  /* 🎁 核心：给卡片套上铅笔手绘边框滤镜 */
+  filter: url(#hand-drawn-edge); 
+  
+  /* 淡淡的铅笔灰阴影，不要太重 */
+  box-shadow: 2px 5px 15px rgba(40, 35, 30, 0.06);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+}
+
+/* 鼠标悬停：放大并触发原本的液态水波滤镜 */
+.nomadic-photo:hover {
+  transform: scale(1.15) rotate(0deg) translateY(-15px) !important;
+  box-shadow: 5px 15px 25px rgba(40, 35, 30, 0.1);
+  z-index: 20;
+  /* 悬停时切换成流动水彩滤镜（我们在下面定义） */
+  filter: url(#nomadic-liquid-filter); 
+}
+
+/* 3. 照片内的主题区域：升级为淡彩晕染效果 */
+.watercolor-wash-1 {
+  background: radial-gradient(circle, rgba(168,218,220,0.6) 0%, rgba(241,250,238,0) 70%);
+  filter: blur(4px); /* 让边缘进一步晕染开 */
+}
+.watercolor-wash-2 {
+  background: radial-gradient(circle, rgba(244,162,97,0.5) 0%, rgba(241,250,238,0) 70%);
+  filter: blur(4px);
+}
+.watercolor-wash-3 {
+  background: radial-gradient(circle, rgba(233,196,106,0.5) 0%, rgba(241,250,238,0) 70%);
+  filter: blur(4px);
+}
+
+/* 4. 字体换成更有手写日记感的人文 Serif 字体 */
+.nomadic-text {
+  margin-top: 25px;
+  font-family: " canva Sans", "Kaiti", "楷体", serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #555;
+  font-size: 15px;
+}
+
+/* 3. 鼠标悬停：放大、抬高、并触发流体液态滤镜 */
+.nomadic-photo:hover {
+  transform: scale(1.15) rotate(0deg) translateY(-15px) !important;
+  box-shadow: 0 25px 50px rgba(60, 50, 40, 0.18);
+  z-index: 20;
+  /* 🔥 悬停时激活 SVG 液态滤镜 */
+  filter: url(#nomadic-liquid-filter); 
+}
+
+/* 4. 照片底部文字 */
+.nomadic-text {
+  margin-top: 20px;
+  font-family: "Georgia", "华文中宋", serif;
+  font-style: italic;
+  letter-spacing: 2px;
+  color: #2b2b2b;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+.nomadic-photo:hover .nomadic-text {
+  color: #c9a063;
+}
+
+/* 5. ✨【修复核心】呼吸漂浮动画（补上了 transform: ） */
+@keyframes float-slow-1 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes float-slow-2 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(10px); }
+}
+
+/* 绑定动画，让它们一直保持轻微漂浮 */
+.float-1 { animation: float-slow-1 4s ease-in-out infinite; }
+.float-2 { animation: float-slow-2 5s ease-in-out infinite; }
+.float-3 { animation: float-slow-1 6s ease-in-out infinite; }
+
+/* 6. 电影感的大门切页过渡 */
+.cinematic-view {
+  animation: fadeInBlur 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeInBlur {
+  0% { opacity: 0; filter: blur(10px); transform: scale(0.95); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+
+/* ==========================================================================
+   AI Studio 交互背景全屏置底专属样式
+   ========================================================================== */
+.studio-interactive-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;          /* 🔥 确保它永远在所有登录表单和文字的后面 */
+  overflow: hidden;
+  pointer-events: none; /* 🔥 极度重要：让鼠标点击穿透视频，不影响你原本按钮的点击事件 */
+}
