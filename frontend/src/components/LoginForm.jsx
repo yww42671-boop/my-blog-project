@@ -1,23 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../AuthContext';
 
 const LINE_DELAY = 200;
 
 export default function LoginForm({ onLoginSuccess }) {
+  const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
   const [message, setMessage] = useState('');
   const [revealed, setRevealed] = useState(0);
   const mounted = useRef(false);
 
-  // Left-to-right reveal animation — each line reveals sequentially
+  // Left-to-right reveal animation
   useEffect(() => {
     mounted.current = true;
-    const lines = [
-      'title',
-      'form',
-      isLogin ? 'toggle-login' : 'toggle-register',
-    ];
+    const lines = ['title', 'form', isLogin ? 'toggle-login' : 'toggle-register'];
     lines.forEach((_, i) => {
       setTimeout(() => {
         if (mounted.current) setRevealed((v) => Math.max(v, i + 1));
@@ -30,33 +29,19 @@ export default function LoginForm({ onLoginSuccess }) {
     e.preventDefault();
     setMessage('');
 
-    const url = isLogin
-      ? 'http://127.0.0.1:5000/api/login'
-      : 'http://127.0.0.1:5000/api/register';
-
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (isLogin) {
-          setMessage(`🎉 登录成功！欢迎你，${username}`);
-          setTimeout(() => onLoginSuccess(username), 600);
-        } else {
-          setMessage('✅ 注册成功，请登录');
-          setIsLogin(true);
-        }
-        setPassword('');
+      if (isLogin) {
+        await login(username, password);
+        setMessage(`🎉 登录成功！欢迎你，${username}`);
+        setTimeout(() => onLoginSuccess(username), 600);
       } else {
-        setMessage(`❌ ${data.message || '操作失败'}`);
+        await register(username, password, nickname || username);
+        setMessage('🎉 注册成功！');
+        setTimeout(() => onLoginSuccess(username), 600);
       }
-    } catch (error) {
-      setMessage('❌ 无法连接到后端服务器');
+      setPassword('');
+    } catch (err) {
+      setMessage(`❌ ${err.message || '操作失败'}`);
     }
   };
 
@@ -124,21 +109,20 @@ export default function LoginForm({ onLoginSuccess }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  backgroundColor: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: '12px',
-                  fontSize: '18px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  color: '#e8e0d0',
-                  fontFamily: 'inherit',
-                  letterSpacing: '0.5px',
-                }}
+                style={inputStyle}
               />
             </div>
+            {!isLogin && (
+              <div style={{ marginBottom: '18px' }}>
+                <input
+                  type="text"
+                  placeholder="nickname（显示用，选填）"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            )}
             <div style={{ marginBottom: '22px' }}>
               <input
                 type="password"
@@ -146,19 +130,7 @@ export default function LoginForm({ onLoginSuccess }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  backgroundColor: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: '12px',
-                  fontSize: '18px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  color: '#e8e0d0',
-                  fontFamily: 'inherit',
-                  letterSpacing: '0.5px',
-                }}
+                style={inputStyle}
               />
             </div>
             <button
@@ -230,3 +202,17 @@ export default function LoginForm({ onLoginSuccess }) {
     </div>
   );
 }
+
+const inputStyle = {
+  width: '100%',
+  padding: '14px 18px',
+  backgroundColor: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  borderRadius: '12px',
+  fontSize: '18px',
+  outline: 'none',
+  boxSizing: 'border-box',
+  color: '#e8e0d0',
+  fontFamily: 'inherit',
+  letterSpacing: '0.5px',
+};

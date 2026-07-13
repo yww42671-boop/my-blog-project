@@ -2,6 +2,8 @@ import { useState } from 'react';
 import FoodPage from './FoodPage';
 import TravelPage from './TravelPage';
 import GamePage from './GamePage';
+import NotesPage from './NotesPage';
+import BlogPage from './BlogPage';
 
 // 严格使用原坐标（基于 1920×1080 图片测量）
 const ITEMS = [
@@ -53,6 +55,7 @@ export default function MainInterface({ username, onLogout }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [hoveredKey, setHoveredKey] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [notebookChoice, setNotebookChoice] = useState(false);
 
   if (selectedItem) {
     // 美食子页面
@@ -66,6 +69,14 @@ export default function MainInterface({ username, onLogout }) {
     // 游戏子页面
     if (selectedItem.sub === 'game') {
       return <GamePage onBack={() => setSelectedItem(null)} />;
+    }
+    // 笔记子页面
+    if (selectedItem.sub === 'notes') {
+      return <NotesPage onBack={() => setSelectedItem(null)} />;
+    }
+    // 博客子页面
+    if (selectedItem.sub === 'blog') {
+      return <BlogPage onBack={() => setSelectedItem(null)} />;
     }
 
     const content = SUB_CONTENT[selectedItem.sub];
@@ -183,6 +194,69 @@ export default function MainInterface({ username, onLogout }) {
         </button>
       </div>
 
+      {/* 笔记本选择弹窗 */}
+      {notebookChoice && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)',
+            fontFamily: "'Special Elite', 'Courier New', monospace",
+          }}
+          onClick={() => setNotebookChoice(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'rgba(20,20,20,0.9)',
+              backdropFilter: 'blur(18px)',
+              borderRadius: 20, padding: '32px 36px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#e8e0d0', minWidth: 320,
+            }}
+          >
+            <div style={{ fontSize: 16, letterSpacing: '1px', marginBottom: 20, textAlign: 'center', color: 'rgba(232,224,208,0.5)' }}>
+              选择模式
+            </div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div
+                onClick={() => { setNotebookChoice(false); setSelectedItem({ sub: 'notes' }); }}
+                style={{
+                  flex: 1, padding: '24px 20px', borderRadius: 14,
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  cursor: 'pointer', textAlign: 'center',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.07)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
+              >
+                <div style={{ fontSize: 36, marginBottom: 10 }}>📓</div>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>本地笔记</div>
+                <div style={{ fontSize: 12, color: 'rgba(232,224,208,0.3)' }}>保存到浏览器</div>
+              </div>
+              <div
+                onClick={() => { setNotebookChoice(false); setSelectedItem({ sub: 'blog' }); }}
+                style={{
+                  flex: 1, padding: '24px 20px', borderRadius: 14,
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  cursor: 'pointer', textAlign: 'center',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.07)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
+              >
+                <div style={{ fontSize: 36, marginBottom: 10 }}>📝</div>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>博客</div>
+                <div style={{ fontSize: 12, color: 'rgba(232,224,208,0.3)' }}>发布到云端</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hotspots — 严格使用原坐标 */}
       {ITEMS.map((item) => {
         const isHover = hoveredKey === item.key;
@@ -196,7 +270,14 @@ export default function MainInterface({ username, onLogout }) {
             key={item.key}
             onMouseEnter={() => setHoveredKey(item.key)}
             onMouseLeave={() => setHoveredKey(null)}
-            onClick={() => setSelectedItem(item)}
+            onClick={() => {
+              // 笔记本特殊处理：弹出选择窗口
+              if (item.sub === 'notes') {
+                setNotebookChoice(true);
+              } else {
+                setSelectedItem(item);
+              }
+            }}
             style={{
               position: 'absolute',
               left: `${pL}%`,

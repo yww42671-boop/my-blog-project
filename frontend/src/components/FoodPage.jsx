@@ -109,6 +109,7 @@ function TagSelector({ selected, onChange, allTags }) {
 export default function FoodPage({ onBack }) {
   const [reviews, setReviews] = useState(loadReviews().map(migrate));
   const [showForm, setShowForm] = useState(false);
+  const [showRankings, setShowRankings] = useState(false);
   const [editingId, setEditingId] = useState(null); // null = 新建
   const [form, setForm] = useState(emptyForm());
 
@@ -137,6 +138,35 @@ export default function FoodPage({ onBack }) {
       comment: '',
       address: '',
     };
+  }
+
+  /* ── 菜品榜单计算 ── */
+  function computeRankings() {
+    const dishMap = {};
+    reviews.forEach((r) => {
+      const last = r.edits[r.edits.length - 1];
+      (r.images || []).forEach((img) => {
+        const name = (img.dishName || '').trim();
+        if (!name) return;
+        if (!dishMap[name]) {
+          dishMap[name] = { totalEnv: 0, totalTaste: 0, totalValue: 0, count: 0 };
+        }
+        dishMap[name].totalEnv += last.environment;
+        dishMap[name].totalTaste += last.taste;
+        dishMap[name].totalValue += last.value;
+        dishMap[name].count += 1;
+      });
+    });
+    return Object.entries(dishMap)
+      .map(([name, d]) => ({
+        name,
+        avgEnv: d.totalEnv / d.count,
+        avgTaste: d.totalTaste / d.count,
+        avgValue: d.totalValue / d.count,
+        avgTotal: (d.totalEnv + d.totalTaste + d.totalValue) / (d.count * 3),
+        count: d.count,
+      }))
+      .sort((a, b) => b.avgTotal - a.avgTotal);
   }
 
   /* 图片 */
@@ -228,6 +258,88 @@ export default function FoodPage({ onBack }) {
     setShowForm(true);
   };
 
+  /* ── 榜单视图 ── */
+  if (showRankings) {
+    const rankings = computeRankings();
+    return (
+      <div style={container}>
+        <div style={header}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button onClick={() => setShowRankings(false)} style={backBtn}>{'< back'}</button>
+          </div>
+          <span style={{ fontSize: 18, letterSpacing: '1px', color: '#e8e0d0' }}>🏆 菜品推荐榜</span>
+          <div />
+        </div>
+
+        <div style={body}>
+          {rankings.length === 0 ? (
+            <div style={emptyState}>
+              暂无数据<br />添加带菜品名称的美食评测后即可生成榜单
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {rankings.map((item, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+                const barWidth = item.avgTotal / 10 * 100;
+                return (
+                  <div key={item.name} style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    backgroundColor: idx < 3 ? 'rgba(255,215,0,0.04)' : 'rgba(255,255,255,0.02)',
+                    borderRadius: 12, padding: '14px 18px',
+                    border: idx < 3 ? '1px solid rgba(255,215,0,0.12)' : '1px solid rgba(255,255,255,0.04)',
+                  }}>
+                    {/* 排名 */}
+                    <div style={{ fontSize: idx < 3 ? 22 : 16, minWidth: 36, textAlign: 'center' }}>
+                      {medal}
+                    </div>
+                    {/* 信息 */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4, letterSpacing: '0.5px' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'rgba(232,224,208,0.4)' }}>
+                        <span>口味 {item.avgTaste.toFixed(1)}</span>
+                        <span>环境 {item.avgEnv.toFixed(1)}</span>
+                        <span>性价比 {item.avgValue.toFixed(1)}</span>
+                        <span>· {item.count} 次评价</span>
+                      </div>
+                      {/* 进度条 */}
+                      <div style={{
+                        marginTop: 6, height: 4, borderRadius: 2,
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          height: '100%', borderRadius: 2,
+                          width: `${barWidth}%`,
+                          background: idx === 0
+                            ? 'linear-gradient(90deg, #ffd700, #ffaa00)'
+                            : idx === 1
+                              ? 'linear-gradient(90deg, #c0c0c0, #a0a0a0)'
+                              : idx === 2
+                                ? 'linear-gradient(90deg, #cd7f32, #b8860b)'
+                                : 'linear-gradient(90deg, rgba(232,224,208,0.3), rgba(232,224,208,0.1))',
+                          transition: 'width 0.5s ease',
+                        }} />
+                      </div>
+                    </div>
+                    {/* 总分 */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 24, fontWeight: 500, color: idx < 3 ? '#ffd700' : 'rgba(232,224,208,0.5)' }}>
+                        {item.avgTotal.toFixed(1)}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'rgba(232,224,208,0.2)', letterSpacing: '1px' }}>/ 10</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   /* ── 列表页 ── */
   if (!showForm) {
     return (
@@ -238,7 +350,7 @@ export default function FoodPage({ onBack }) {
             <button onClick={openNew} style={plusBtn}>+</button>
           </div>
           <span style={{ fontSize: 18, letterSpacing: '1px', color: '#e8e0d0' }}>🍰 美食</span>
-          <div />
+          <button onClick={() => setShowRankings(true)} style={rankBtn}>🏆 榜单</button>
         </div>
 
         <div style={body}>
@@ -477,6 +589,14 @@ const plusBtn = {
   color: '#e8e0d0', cursor: 'pointer', fontSize: 18,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontFamily: 'inherit', lineHeight: 1,
+};
+
+const rankBtn = {
+  background: 'none', border: '1px solid rgba(255,215,0,0.25)',
+  borderRadius: 8,
+  color: '#ffd700', cursor: 'pointer', fontSize: 13,
+  fontFamily: 'inherit', padding: '6px 14px',
+  letterSpacing: '0.5px',
 };
 
 const body = {

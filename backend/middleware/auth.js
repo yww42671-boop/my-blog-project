@@ -1,0 +1,21 @@
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'my_blog_secret_key_2024';
+
+function authMiddleware(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).json({ message: '未登录，请先登录' });
+  }
+
+  const token = header.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // { id, username, nickname }
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: '登录已过期，请重新登录' });
+  }
+}
+
+module.exports = { authMiddleware, JWT_SECRET };
