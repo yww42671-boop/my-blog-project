@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './AuthContext';
 import BackgroundVideo from './components/BackgroundVideo';
 import LoginForm from './components/LoginForm';
 import MainInterface from './components/MainInterface';
 
 function AppContent() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, githubLogin } = useAuth();
   const [loggedInUser, setLoggedInUser] = useState(null);
+
+  // GitHub OAuth 回调：从 URL 读取 token
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      githubLogin(token);
+      // 清除 URL 参数
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [githubLogin]);
 
   // 优先使用 AuthContext 的 user，其次 fallback 到本地状态
   const currentUser = user?.username || loggedInUser;

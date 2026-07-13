@@ -1,6 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { setToken, setStoredUser, getStoredUser, authApi } from './api';
 
+// 解码 JWT payload（不带验证，仅读取）
+function parseToken(token) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -38,8 +48,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // GitHub OAuth：用 token 直接登录
+  const githubLogin = (token) => {
+    const payload = parseToken(token);
+    if (!payload) return;
+    const githubUser = { id: payload.id, username: payload.username, nickname: payload.nickname };
+    setToken(token);
+    setStoredUser(githubUser);
+    setUser(githubUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, githubLogin }}>
       {children}
     </AuthContext.Provider>
   );

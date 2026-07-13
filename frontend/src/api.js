@@ -1,5 +1,7 @@
 const BASE_URL = 'http://127.0.0.1:5000';
 
+export const GITHUB_LOGIN_URL = `${BASE_URL}/api/auth/github`;
+
 function getToken() {
   return localStorage.getItem('blog_token');
 }

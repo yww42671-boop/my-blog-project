@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const authRoutes = require('./routes/auth');
+const githubRoutes = require('./routes/github');
 const userRoutes = require('./routes/users');
 const blogRoutes = require('./routes/blogs');
 const commentRoutes = require('./routes/comments');
@@ -15,6 +16,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // 路由挂载
 app.use('/api', authRoutes);
+app.use('/api/auth', githubRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/blogs', commentRoutes);
