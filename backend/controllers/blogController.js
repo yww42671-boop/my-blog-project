@@ -5,6 +5,12 @@ exports.list = async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
   const offset = (page - 1) * limit;
+  const sort = req.query.sort || 'latest'; // latest | popular
+
+  let orderClause = 'ORDER BY b.created_at DESC';
+  if (sort === 'popular') {
+    orderClause = 'ORDER BY like_count DESC, comment_count DESC, b.created_at DESC';
+  }
 
   try {
     const [countRows] = await pool.query(
@@ -21,7 +27,7 @@ exports.list = async (req, res) => {
        FROM blogs b
        JOIN users u ON b.author_id = u.id
        WHERE b.status = 'published'
-       ORDER BY b.created_at DESC
+       ${orderClause}
        LIMIT ? OFFSET ?`,
       [limit, offset]
     );

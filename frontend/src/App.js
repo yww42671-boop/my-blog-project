@@ -5,11 +5,16 @@ import LoginForm from './components/LoginForm';
 import MainInterface from './components/MainInterface';
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [loggedInUser, setLoggedInUser] = useState(null);
 
   // 优先使用 AuthContext 的 user，其次 fallback 到本地状态
   const currentUser = user?.username || loggedInUser;
+
+  const handleLogout = () => {
+    logout();              // 清除 JWT token + AuthContext user
+    setLoggedInUser(null); // 清除本地登录状态
+  };
 
   if (loading) {
     return (
@@ -32,7 +37,7 @@ function AppContent() {
       ) : (
         <MainInterface
           username={currentUser}
-          onLogout={() => setLoggedInUser(null)}
+          onLogout={handleLogout}
         />
       )}
     </>

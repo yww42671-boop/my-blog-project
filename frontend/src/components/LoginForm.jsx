@@ -94,9 +94,12 @@ export default function LoginForm({ onLoginSuccess }) {
               height: '1px',
               width: '100%',
               background: 'linear-gradient(90deg, rgba(232,224,208,0.5), transparent)',
-              marginBottom: '24px',
+              marginBottom: '4px',
             }}
           />
+          <div style={{ fontSize: 11, color: 'rgba(232,224,208,0.2)', letterSpacing: '2px', marginBottom: 20 }}>
+            Melon's Blog
+          </div>
         </div>
 
         {/* Form */}

@@ -76,7 +76,7 @@ export const userApi = {
 
 // ===== Blog =====
 export const blogApi = {
-  list: (page = 1, limit = 20) => request(`/api/blogs?page=${page}&limit=${limit}`),
+  list: (page = 1, limit = 20, sort = 'latest') => request(`/api/blogs?page=${page}&limit=${limit}&sort=${sort}`),
   getById: (id) => request(`/api/blogs/${id}`),
   create: (data) =>
     request('/api/blogs', {

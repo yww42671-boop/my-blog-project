@@ -63,18 +63,19 @@ export default function BlogPage({ onBack }) {
   // 我的博客列表（编辑管理用）
   const [myBlogs, setMyBlogs] = useState([]);
   const [showMyBlogs, setShowMyBlogs] = useState(false);
+  const [sortBy, setSortBy] = useState('latest'); // latest | popular
 
   // 加载博客列表
   useEffect(() => {
     setLoading(true);
-    blogApi.list(page)
+    blogApi.list(page, 20, sortBy)
       .then((data) => {
         setBlogs(data.blogs);
         setTotalPages(data.pagination.totalPages);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, sortBy]);
 
   // 加载我的博客
   const loadMyBlogs = async () => {
@@ -154,6 +155,11 @@ export default function BlogPage({ onBack }) {
             <button onClick={() => { setShowMyBlogs(!showMyBlogs); if (!showMyBlogs) loadMyBlogs(); }} style={ghostBtn}>
               {showMyBlogs ? '📋 全部' : '📝 我的'}
             </button>
+            {!showMyBlogs && (
+              <button onClick={() => setSortBy(s => s === 'latest' ? 'popular' : 'latest')} style={ghostBtn}>
+                {sortBy === 'latest' ? '🔥 热度' : '⏱️ 最新'}
+              </button>
+            )}
           </div>
           <span style={{ fontSize: 18, letterSpacing: '1px', color: '#e8e0d0' }}>📝 BLOG</span>
           {user && <button onClick={openNewEditor} style={plusBtn}>+</button>}
